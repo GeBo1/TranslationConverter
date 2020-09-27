@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "TranslationConverter": {
+      "commandName": "Project",
+      "commandLineArgs": "K:\\GitHub\\ScrewThisNoise\\TranslationConverter\\TranslationConverter\\bin\\Debug\\netcoreapp3.1\\csvfile.csv"
+    }
+  }
+}
