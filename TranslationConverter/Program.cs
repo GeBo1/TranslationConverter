@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -13,60 +14,60 @@ namespace TranslationConverter
         static void Main(string[] args)
         {
             // Checking that the input file is a csv 
-            if(args.Length == 0 || args[0].Remove(0, args[0].Length - 4) != ".csv")
-            {
-                Console.WriteLine("Please drag a .csv file at this application to use");
-                Console.WriteLine("Press any key to exit...");
-                Console.ReadKey();
-                Environment.Exit(0);
-            }
+            //if (args.Length == 0 || args[0].Remove(0, args[0].Length - 4) != ".csv")
+            //{
+            //    Console.WriteLine("Please drag a .csv file at this application to use");
+            //    Console.WriteLine("Press any key to exit...");
+            //    Console.ReadKey();
+            //    Environment.Exit(0);
+            //}
 
-            // Splitting the csv to txt XUA translations
-            string csvfile = args[0];
-            string TLFile = "Undefined";
-            string TLPath = "Undefined";
-            string[] lines = System.IO.File.ReadAllLines(csvfile);
-            foreach (string line in lines)
-            {
-                string[] csvsplit = line.Split(';');
-                if (csvsplit[3] == "(x)")
-                {
-                    TLFile = $"1translation\\{csvsplit[0]}";
-                    TLPath = TLFile.Remove(TLFile.Length - 15, 15);
-                    if (!Directory.Exists(TLPath))
-                        Directory.CreateDirectory(TLPath);
-                }
-                else if (csvsplit[3] == "(y)")
-                {
-                    using (StreamWriter hit = new StreamWriter(TLFile, true))
-                    {
-                        hit.WriteLine("");
-                    }
-                }
-                else if (csvsplit[3] == "(z)")
-                {
-                    using (StreamWriter hit = new StreamWriter(TLFile, true))
-                    {
-                        hit.WriteLine(csvsplit[0] + "=" + csvsplit[1]);
-                        Console.WriteLine(csvsplit[0] + "=" + csvsplit[1]);
-                    }
-                }
-                else if (csvsplit[3] == "(xx)")
-                {
-                    using (StreamWriter hit = new StreamWriter(TLFile, true))
-                    {
-                        hit.WriteLine(csvsplit[0] + "=");
-                        Console.WriteLine(csvsplit[0] + "=");
-                    }
-                }
-                if (TLPath.Contains("h\\list") && csvsplit[3] == "(z)")
-                {
-                    using (StreamWriter hit = new StreamWriter("master.txt", true))
-                    {
-                        hit.WriteLine(csvsplit[0] + "=" + csvsplit[1]);
-                    }
-                }
-            }
+            //Splitting the csv to txt XUA translations
+            //string csvfile = args[0];
+            //string TLFile = "Undefined";
+            //string TLPath = "Undefined";
+            //string[] lines = System.IO.File.ReadAllLines(csvfile);
+            //foreach (string line in lines)
+            //{
+            //    string[] csvsplit = line.Split(';');
+            //    if (csvsplit[3] == "(x)")
+            //    {
+            //        TLFile = $"1translation\\{csvsplit[0]}";
+            //        TLPath = TLFile.Remove(TLFile.Length - 15, 15);
+            //        if (!Directory.Exists(TLPath))
+            //            Directory.CreateDirectory(TLPath);
+            //    }
+            //    else if (csvsplit[3] == "(y)")
+            //    {
+            //        using (StreamWriter hit = new StreamWriter(TLFile, true))
+            //        {
+            //            hit.WriteLine("");
+            //        }
+            //    }
+            //    else if (csvsplit[3] == "(z)")
+            //    {
+            //        using (StreamWriter hit = new StreamWriter(TLFile, true))
+            //        {
+            //            hit.WriteLine(csvsplit[0] + "=" + csvsplit[1]);
+            //            Console.WriteLine(csvsplit[0] + "=" + csvsplit[1]);
+            //        }
+            //    }
+            //    else if (csvsplit[3] == "(xx)")
+            //    {
+            //        using (StreamWriter hit = new StreamWriter(TLFile, true))
+            //        {
+            //            hit.WriteLine(csvsplit[0] + "=");
+            //            Console.WriteLine(csvsplit[0] + "=");
+            //        }
+            //    }
+            //    if (TLPath.Contains("h\\list") && csvsplit[3] == "(z)")
+            //    {
+            //        using (StreamWriter hit = new StreamWriter("master.txt", true))
+            //        {
+            //            hit.WriteLine(csvsplit[0] + "=" + csvsplit[1]);
+            //        }
+            //    }
+            //}
 
             // Dupe filling
 
@@ -78,41 +79,62 @@ namespace TranslationConverter
             {
                 string[] HTranslationFiles = File.ReadAllLines(HTransFile); // Filename obtained
                 string outputdir = HTransFile.Replace("1translation", "2translation").Remove(HTransFile.Length - 15, 15);
-                string finalLine = "unassigned";
                 filenumber++;
                 Console.Clear();
                 Console.WriteLine("Working on file " + filenumber + " out of " + HTransFile.Length + "...");
 
+                if (!Directory.Exists(outputdir))
+                    Directory.CreateDirectory(outputdir);
+
+                StreamWriter file = new StreamWriter($"{outputdir}\\translation.txt", true);
+
                 foreach (string oldLine in HTranslationFiles)
                 {
                     string[] splitOldLine = oldLine.Split('='); // splitOldLine[0] for comparison
+                    bool hit = false;
 
                     foreach (string masterLine in master)
                     {
                         string[] splitMasterLine = masterLine.Split('='); // splitMasterLine[0] for comparison
 
 
-                        if (splitOldLine[0] == splitMasterLine[0])
-                            finalLine = splitMasterLine[0] + "=" + splitMasterLine[1];
+                        if (splitOldLine[0] == splitMasterLine[0] && !hit)
+                        {
+                            file.Write(splitMasterLine[0] + "=" + splitMasterLine[1] + "\n");
+                            hit = true;
+                        }
                     }
 
-                    if (finalLine.Length == 0)
-                        finalLine = splitOldLine[0] + "=" + splitOldLine[1];
-
-                    if (!Directory.Exists(outputdir))
-                        Directory.CreateDirectory(outputdir);
-
-                    using (StreamWriter writer = new StreamWriter($"{outputdir}\\translation.txt", true))
+                    if(splitOldLine[0] == "")
+                        file.Write("\n");
+                    else if (!hit)
                     {
-                        //Console.WriteLine($"{outputdir}\\translation.txt");
-                        writer.WriteLine(finalLine);
+                        try
+                        {
+                            file.Write(splitOldLine[0] + "=" + splitOldLine[1] + "\n");
+                        }
+                        catch(Exception e)
+                        {
+                            Console.WriteLine(e);
+                        }
                     }
+
+
+
+                    //using (StreamWriter writer = new StreamWriter($"{outputdir}\\translation.txt", true))
+                    //{
+                    //    //Console.WriteLine($"{outputdir}\\translation.txt");
+                    //    writer.WriteLine(finalLine);
+                    //}
+
                 }
+
+                file.Close();
             }
 
-                Console.ReadKey();
+            Console.ReadKey();
             // Running Cleanup
-
+            Console.WriteLine("Hi there");
             string sDir = "translation";
 
             if (Directory.Exists("3translation"))
