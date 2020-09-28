@@ -136,10 +136,8 @@ namespace TranslationConverter
 
         public static void ReadXUA(string WorkingDir, string FolderName)
         {
-            int serial = 0;
             string category = "";
             HashSet<string> charactertypes = new HashSet<string>();
-            Dictionary<string, int> LineList = new Dictionary<string, int>();
 
             foreach (var HTransFile in Directory.EnumerateFiles(WorkingDir, FolderName + "\\*.txt", SearchOption.AllDirectories))
             {
@@ -180,10 +178,11 @@ namespace TranslationConverter
                 }
             }
 
-            foreach(string selectedcharacter in charactertypes)
+            foreach (string selectedcharacter in charactertypes)
             {
                 Console.WriteLine($"Dealing with {selectedcharacter} in {FolderName}");
                 string CSVFileName = $"CSVFiles\\{selectedcharacter}.csv";
+                string ErrorFileName = $"CSVFiles\\Errors.txt";
                 bool FirstLine = false;
 
                 if (!Directory.Exists("CSVFiles"))
@@ -249,40 +248,26 @@ namespace TranslationConverter
                                 {
                                     foreach (string line in HTranslationFiles)
                                     {
-                                        serial++;
                                         if (FirstLine)
                                         {
-                                            outputfile.WriteLine("Original (JP);Current Fantrans (EN);TL Note;LineID");
+                                            outputfile.WriteLine("Original (JP);Current Fantrans (EN);TL Note");
                                             FirstLine = false;
                                         }
 
                                         if (newDoc)
                                         {
-                                            outputfile.WriteLine($";;;\n;;;\n{HTransFile};;;");
+                                            outputfile.WriteLine($";;\n;;\n{HTransFile};;");
                                             newDoc = false;
                                         }
 
-                                        if (line != "")
+                                        if (line != "" && line != " ")
                                         {
-                                            string[] splitLine = line.Split('=');
-                                            if(!LineList.ContainsKey(splitLine[0].Replace(@"/", "")))
-                                                LineList.Add(splitLine[0].Replace(@"/", ""), serial);
-
-                                            int FinalNumber = 0;
-
-                                            foreach (KeyValuePair<string, int> test in LineList)
-                                            {
-                                                //Console.WriteLine(test.Key);
-                                                if (!LineList.ContainsKey(line.Replace(@"/", "")))
-                                                {
-                                                    FinalNumber = test.Value;
-                                                }
-                                            }
-                                            outputfile.WriteLine($"{splitLine[0].Replace(@"/", "")};{splitLine[1]};;{FinalNumber}");
+                                            string[] splitLine = line.Replace(@"/", "").Split('=');
+                                            outputfile.WriteLine($"{splitLine[0]};{splitLine[1]};");
                                         }
                                         else
                                         {
-                                            outputfile.WriteLine($";;;");
+                                            outputfile.WriteLine($";;");
                                         }
                                     }
                                 }
@@ -290,6 +275,9 @@ namespace TranslationConverter
                             catch (Exception e)
                             {
                                 Console.WriteLine($"Problem occurred in {HTransFile}!");
+                                StreamWriter errorfile = new StreamWriter(ErrorFileName, true);
+                                errorfile.WriteLine($"Problem occurred in {HTransFile}!");
+                                errorfile.Close();
                                 System.Diagnostics.Debug.WriteLine(e);
                             }
 
