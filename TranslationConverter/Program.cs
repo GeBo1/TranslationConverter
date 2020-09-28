@@ -31,7 +31,7 @@ namespace TranslationConverter
                 switch (args[1])
                 {
                     case "convertcsv":
-                        CSVExtract(args);
+                        ReadCSV(args);
                         Environment.Exit(0);
                         break;
                     case "csv":
@@ -57,11 +57,11 @@ namespace TranslationConverter
             }
 
             // Splitting the csv to txt XUA translations
-            CSVExtract(args);
+            ReadCSV(args);
 
             // Dupe filling
 
-            FillDupes();
+            FillHDupes();
 
             // Running Cleanup
 
@@ -71,7 +71,7 @@ namespace TranslationConverter
 
         }
 
-        private static void CSVExtract(string[] args)
+        private static void ReadCSV(string[] args)
         {
             string csvfile = args[0];
             string TLFile = "";
@@ -231,13 +231,6 @@ namespace TranslationConverter
                                 charatype = "c" + match.Groups[1].Value;
                         }
 
-                        //if (charatype != "")
-                        //{
-                        //    Console.WriteLine(charatype);
-                        //    Console.WriteLine(HTransFile);
-                        //    Console.WriteLine("--------------------");
-                        //}
-
                         if (charatype == selectedcharacter)
                         {
 
@@ -289,7 +282,7 @@ namespace TranslationConverter
             }
         }
 
-        private static void FillDupes()
+        private static void FillHDupes()
         {
             string[] master = System.IO.File.ReadAllLines("master.txt");
             string prevStepTL = "1translation\\h";
