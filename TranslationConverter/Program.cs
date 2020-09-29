@@ -15,7 +15,11 @@ namespace TranslationConverter
             var inputfile = "";
 
             // Checking that the input file is a csv 
-            if (args.Length == 0 || args[0].Remove(0, args[0].Length - 4) == ".csv")
+            if (args.Length == 0)
+            {
+
+            }
+            else if (args[0].Remove(0, args[0].Length - 4) == ".csv")
             {
                 Console.WriteLine("You've passed a csv file!");
                 inputfile = "csv";
