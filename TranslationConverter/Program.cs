@@ -39,6 +39,7 @@ namespace TranslationConverter
             Console.WriteLine("4. Convert XUA folder to CSV");
             Console.WriteLine("5. Turn h duplicate checked folder back into CSV");
             Console.WriteLine("6. Turn cleanuped folder back into CSV");
+            Console.WriteLine("66. Create dupechecked and cleaned CSVs");
             Console.WriteLine("Q. Exit");
             Console.WriteLine("");
             Console.Write("Please enter your choice: ");
@@ -101,7 +102,7 @@ namespace TranslationConverter
                     Console.Clear();
                     goto Restart;
                 case "66":
-                    JustAQuicky("csvfile.csv","Finito.csv");
+                    JustAQuicky("csvfile.csv","Treated");
                     goto Restart;
                 case "q":
                     Environment.Exit(0);
@@ -121,9 +122,14 @@ namespace TranslationConverter
 
             if (File.Exists("master.txt"))
                 File.Delete("master.txt");
+            if (File.Exists($"{OutputFile}_DupeChecked.csv"))
+                File.Delete($"{OutputFile}_DupeChecked.csv");
+            if (File.Exists($"{OutputFile}_Cleaned.csv"))
+                File.Delete($"{OutputFile}_Cleaned.csv");
 
             StreamWriter HMaster = new StreamWriter("master.txt", true);
-            StreamWriter EndFile = new StreamWriter(OutputFile, true);
+            StreamWriter EndFile = new StreamWriter($"{OutputFile}_DupeChecked.csv", true);
+            StreamWriter EndFileClean = new StreamWriter($"{OutputFile}_Cleaned.csv", true);
 
             foreach (string line in lines)
             {
@@ -172,6 +178,25 @@ namespace TranslationConverter
                 
             }
             EndFile.Close();
+
+            string[] DupeCheckedLines = System.IO.File.ReadAllLines($"{OutputFile}_DupeChecked.csv");
+
+            foreach (string line in DupeCheckedLines)
+            {
+                string[] splittrans = line.Split(';');
+                try
+                {
+                    splittrans[1] = RunFix(splittrans[1]);
+                    string donetrans = $"{splittrans[0]};{splittrans[1]};{splittrans[2]}";
+
+                    EndFileClean.WriteLine(donetrans);
+                }
+                catch (Exception err)
+                {
+                    Console.Out.WriteLine(err);
+                }
+            }
+            EndFileClean.Close();
         }
 
         private static void ReadCSV(string InputFile)
