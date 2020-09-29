@@ -1,16 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace TranslationConverter
 {
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
-            Console.OutputEncoding = System.Text.Encoding.Unicode;
-            string inputfile = "";
+            Console.OutputEncoding = Encoding.Unicode;
+            var inputfile = "";
 
             // Checking that the input file is a csv 
             if (args.Length == 0 || args[0].Remove(0, args[0].Length - 4) == ".csv")
@@ -32,7 +34,8 @@ namespace TranslationConverter
             // Offering Menu
             Restart:
             Console.WriteLine("\n~~~~~~~~~~~~~~~~~~~BetterRepack Translation Manipulation~~~~~~~~~~~~~~~~~~\n");
-            Console.WriteLine("Welcome to the translation manipulation protocol, soldier! Choose something and get on with it! =P\n");
+            Console.WriteLine(
+                "Welcome to the translation manipulation protocol, soldier! Choose something and get on with it! =P\n");
             Console.WriteLine("1. Convert csv to XUA compatible txts");
             Console.WriteLine("2. Check and populate duplicate h lines");
             Console.WriteLine("3. Cleanup translation for release");
@@ -44,20 +47,20 @@ namespace TranslationConverter
             Console.WriteLine("");
             Console.Write("Please enter your choice: ");
 
-            var MenuChoice = Console.ReadLine().ToLower();
+            var menuChoice = Console.ReadLine().ToLower();
 
-            Console.WriteLine(MenuChoice.ToUpper());
+            Console.WriteLine(menuChoice.ToUpper());
             Console.Clear();
 
             // Launching part based on user input
 
-            switch (MenuChoice)
+            switch (menuChoice)
             {
                 case "1":
                     if (inputfile == "csv")
-                        ReadCSV(args[0]);
+                        ReadCsv(args[0]);
                     else if (File.Exists("csvfile.csv"))
-                        ReadCSV("csvfile.csv");
+                        ReadCsv("csvfile.csv");
                     else
                         Console.WriteLine("You didn't pass an csv file!");
                     goto Restart;
@@ -78,31 +81,34 @@ namespace TranslationConverter
                 case "4":
                     if (inputfile == "folder" && Directory.Exists(args[0]))
                     {
-                        ReadXUA(args[0], "adv");
-                        ReadXUA(args[0], "communication");
-                        ReadXUA(args[0], "h");
+                        ReadXua(args[0], "adv");
+                        ReadXua(args[0], "communication");
+                        ReadXua(args[0], "h");
                         Console.Clear();
                     }
                     else if (Directory.Exists("abdata"))
                     {
-                        ReadXUA("abdata", "adv");
-                        ReadXUA("abdata", "communication");
-                        ReadXUA("abdata", "h");
+                        ReadXua("abdata", "adv");
+                        ReadXua("abdata", "communication");
+                        ReadXua("abdata", "h");
                         Console.Clear();
                     }
                     else
+                    {
                         Console.WriteLine("You need to pass a folder!");
+                    }
+
                     goto Restart;
                 case "5":
-                    MakeCSV("2translation");
+                    MakeCsv("2translation");
                     Console.Clear();
                     goto Restart;
                 case "6":
-                    MakeCSV("3translation");
+                    MakeCsv("3translation");
                     Console.Clear();
                     goto Restart;
                 case "66":
-                    JustAQuicky("csvfile.csv","Treated");
+                    JustAQuicky("csvfile.csv", "Treated");
                     goto Restart;
                 case "q":
                     Environment.Exit(0);
@@ -111,103 +117,96 @@ namespace TranslationConverter
                     Console.WriteLine("Invalid key");
                     goto Restart;
             }
-
         }
 
-        private static void JustAQuicky(string InputFile, string OutputFile)
+        private static void JustAQuicky(string inputFile, string outputFile)
         {
-            string[] lines = System.IO.File.ReadAllLines(InputFile);
-            string FinalLine = "";
-            bool IsInH = false;
+            var lines = File.ReadAllLines(inputFile);
+            var finalLine = "";
+            var isInH = false;
 
             if (File.Exists("master.txt"))
                 File.Delete("master.txt");
-            if (File.Exists($"{OutputFile}_DupeChecked.csv"))
-                File.Delete($"{OutputFile}_DupeChecked.csv");
-            if (File.Exists($"{OutputFile}_Cleaned.csv"))
-                File.Delete($"{OutputFile}_Cleaned.csv");
+            if (File.Exists($"{outputFile}_DupeChecked.csv"))
+                File.Delete($"{outputFile}_DupeChecked.csv");
+            if (File.Exists($"{outputFile}_Cleaned.csv"))
+                File.Delete($"{outputFile}_Cleaned.csv");
 
-            StreamWriter HMaster = new StreamWriter("master.txt", true);
-            StreamWriter EndFile = new StreamWriter($"{OutputFile}_DupeChecked.csv", true);
-            StreamWriter EndFileClean = new StreamWriter($"{OutputFile}_Cleaned.csv", true);
+            var hMaster = new StreamWriter("master.txt", true);
+            var endFile = new StreamWriter($"{outputFile}_DupeChecked.csv", true);
+            var endFileClean = new StreamWriter($"{outputFile}_Cleaned.csv", true);
 
-            foreach (string line in lines)
+            foreach (var line in lines)
             {
-                string[] csvsplit = line.Split(';');
+                var csvsplit = line.Split(';');
 
                 if (line.Contains("h\\") && csvsplit[0] != "")
-                    IsInH = true;
+                    isInH = true;
                 else if ((line.Contains("adv\\") || line.Contains("communication\\")) && csvsplit[0] != "")
-                    IsInH = false;
-                else if (IsInH)
-                    HMaster.WriteLine($"{csvsplit[0]};{csvsplit[1]}");
+                    isInH = false;
+                else if (isInH)
+                    hMaster.WriteLine($"{csvsplit[0]};{csvsplit[1]}");
             }
-            HMaster.Close();
 
-            string[] master = File.ReadAllLines("master.txt");
-            IsInH = false;
-            foreach (string line in lines)
+            hMaster.Close();
+
+            var master = File.ReadAllLines("master.txt");
+            isInH = false;
+            foreach (var line in lines)
             {
-                string[] csvsplit = line.Split(';');
-                bool hit = false;
+                var csvsplit = line.Split(';');
+                var hit = false;
                 if (line.Contains("h\\") && csvsplit[0] != "")
-                    IsInH = true;
+                    isInH = true;
                 else if ((line.Contains("adv\\") || line.Contains("communication\\")) && csvsplit[0] != "")
-                    IsInH = false;
+                    isInH = false;
 
-                if(!IsInH)
-                {
-                    FinalLine = line;
-                }
+                if (!isInH)
+                    finalLine = line;
                 else
-                {
-                    foreach (string HLine in master)
+                    foreach (var hLine in master)
                     {
-                        string[] HLineSplit = HLine.Split(';');
+                        var hLineSplit = hLine.Split(';');
                         if (csvsplit[0].Contains("h\\"))
-                            FinalLine = line;
-                        if (HLineSplit[0] == csvsplit[0] && !hit)
-                        {
-                            FinalLine = $"{csvsplit[0]};{HLineSplit[1]};{csvsplit[2]}";
-                            hit = true;
-                        }
+                            finalLine = line;
+                        if (hLineSplit[0] != csvsplit[0] || hit) continue;
+                        finalLine = $"{csvsplit[0]};{hLineSplit[1]};{csvsplit[2]}";
+                        hit = true;
                     }
-                }
 
-                EndFile.WriteLine(FinalLine);
-                
+                endFile.WriteLine(finalLine);
             }
-            EndFile.Close();
 
-            string[] DupeCheckedLines = System.IO.File.ReadAllLines($"{OutputFile}_DupeChecked.csv");
+            endFile.Close();
 
-            foreach (string line in DupeCheckedLines)
+            var dupeCheckedLines = File.ReadAllLines($"{outputFile}_DupeChecked.csv");
+
+            foreach (var line in dupeCheckedLines)
             {
-                string[] splittrans = line.Split(';');
+                var splittrans = line.Split(';');
                 try
                 {
                     splittrans[1] = RunFix(splittrans[1]);
-                    string donetrans = $"{splittrans[0]};{splittrans[1]};{splittrans[2]}";
+                    var donetrans = $"{splittrans[0]};{splittrans[1]};{splittrans[2]}";
 
-                    EndFileClean.WriteLine(donetrans);
+                    endFileClean.WriteLine(donetrans);
                 }
                 catch (Exception err)
                 {
                     Console.Out.WriteLine(err);
                 }
             }
-            EndFileClean.Close();
+
+            endFileClean.Close();
         }
 
-        private static void ReadCSV(string InputFile)
+        private static void ReadCsv(string inputFile)
         {
-            string csvfile = InputFile;
-            string TLFile = "";
-            string TLPath;
-            string[] lines = System.IO.File.ReadAllLines(csvfile);
-            string LineType = "";
-            string FinishedLine = "";
-            bool TranslationComment;
+            var csvfile = inputFile;
+            var tlFile = "";
+            var lines = File.ReadAllLines(csvfile);
+            var lineType = "";
+            var finishedLine = "";
 
             if (Directory.Exists("1translation"))
                 Directory.Delete("1translation", true);
@@ -215,282 +214,278 @@ namespace TranslationConverter
             if (File.Exists("master.txt"))
                 File.Delete("master.txt");
 
-            StreamWriter Hmaster = new StreamWriter("master.txt", true);
+            var hmaster = new StreamWriter("master.txt", true);
 
-            foreach (string line in lines)
+            foreach (var line in lines)
             {
-                string[] csvsplit = line.Split(';');
+                var csvsplit = line.Split(';');
 
-                string WhereAmI = LineType;
+                var whereAmI = lineType;
 
                 // Deciding what we're dealing with
                 if (csvsplit[0].Contains("adv\\"))
-                    LineType = "ADV";
+                    lineType = "ADV";
                 else if (csvsplit[0].Contains("h\\"))
-                    LineType = "H";
+                    lineType = "H";
                 else if (csvsplit[0].Contains("communication\\"))
-                    LineType = "COMMUNICATION";
+                    lineType = "COMMUNICATION";
                 else if (csvsplit[0] == "")
-                    LineType = "BlankLine";
+                    lineType = "BlankLine";
                 else
-                    LineType = "Normal";
+                    lineType = "Normal";
 
                 // Generalizing linetype
-                TranslationComment = (csvsplit[2] != "") ? TranslationComment = true : TranslationComment = false;
-                if (LineType == "ADV" || LineType == "H" || LineType == "COMMUNICATION")
-                    LineType = "FileName";
+                if (lineType == "ADV" || lineType == "H" || lineType == "COMMUNICATION")
+                    lineType = "FileName";
 
-                if (TLFile == "" && LineType != "FileName")
+                if (tlFile == "" && lineType != "FileName")
                     continue;
 
-                switch (LineType)
+                switch (lineType)
                 {
-                    case "FileName": // Changing directory, makes sure it exists and writes comments to external file for preservation if they exist
-                        TLFile = $"1translation\\{csvsplit[0]}";
-                        if (!TLFile.Contains("abdata"))
-                            TLFile = $"1translation\\abdata\\{csvsplit[0]}";
-                        TLPath = TLFile.Remove(TLFile.Length - 15, 15);
-                        if (!Directory.Exists(TLPath))
-                            Directory.CreateDirectory(TLPath);
-                        FinishedLine = "";
-                        Console.WriteLine("Writing to " + TLFile);
+                    case "FileName"
+                        : // Changing directory, makes sure it exists and writes comments to external file for preservation if they exist
+                        tlFile = $"1translation\\{csvsplit[0]}";
+                        if (!tlFile.Contains("abdata"))
+                            tlFile = $"1translation\\abdata\\{csvsplit[0]}";
+                        var tlPath = tlFile.Remove(tlFile.Length - 15, 15);
+                        if (!Directory.Exists(tlPath))
+                            Directory.CreateDirectory(tlPath);
+                        finishedLine = "";
+                        Console.WriteLine("Writing to " + tlFile);
                         break;
                     case "BlankLine":
-                        FinishedLine = "\n";
+                        finishedLine = "\n";
                         break;
                     case "Normal":
-                        FinishedLine = $"{csvsplit[0]}={csvsplit[1]}\n";
-                        break;
-                    default:
+                        finishedLine = $"{csvsplit[0]}={csvsplit[1]}\n";
                         break;
                 }
 
-                if (TLFile.Contains("h\\") && LineType == "Normal")
-                {
-                    Hmaster.WriteLine($"{csvsplit[0]}={csvsplit[1]}");
-                }
+                if (tlFile.Contains("h\\") && lineType == "Normal") hmaster.WriteLine($"{csvsplit[0]}={csvsplit[1]}");
 
                 // TODO: Need to find a way to do this without endlessly opening the same file...
 
-                using StreamWriter TranslationFile = new StreamWriter(TLFile, true);
-                if (FinishedLine != "")
-                    TranslationFile.Write(FinishedLine);
-                TranslationFile.Close();
+                using var translationFile = new StreamWriter(tlFile, true);
+                if (finishedLine != "")
+                    translationFile.Write(finishedLine);
+                translationFile.Close();
             }
-            Hmaster.Close();
+
+            hmaster.Close();
             Console.Clear();
         }
 
-        public static void ReadXUA(string WorkingDir, string FolderName)
+        public static void ReadXua(string workingDir, string folderName)
         {
-            string category = "";
-            HashSet<string> charactertypes = new HashSet<string>();
+            var category = "";
+            var charactertypes = new HashSet<string>();
 
-            foreach (var HTransFile in Directory.EnumerateFiles(WorkingDir, FolderName + "\\*.txt", SearchOption.AllDirectories))
+            foreach (var hTransFile in Directory.EnumerateFiles(workingDir, folderName + "\\*.txt",
+                SearchOption.AllDirectories))
             {
-                string charatype = "";
+                var charatype = "";
 
-                if (HTransFile.Contains("adv\\"))
+                if (hTransFile.Contains("adv\\"))
                     category = "adv";
-                else if (HTransFile.Contains("h\\"))
+                else if (hTransFile.Contains("h\\"))
                     category = "h";
-                else if (HTransFile.Contains("communication\\"))
+                else if (hTransFile.Contains("communication\\"))
                     category = "communication";
 
-                if (category == "adv")
+                switch (category)
                 {
-                    var match = Regex.Match(HTransFile, @"adv\\\w+\\(c\d\d)\\");
+                    case "adv":
+                    {
+                        var match = Regex.Match(hTransFile, @"adv\\\w+\\(c\d\d)\\");
 
-                    if (match.Groups[1].Value != "")
-                        charatype = match.Groups[1].Value;
-                }
-                if (category == "h")
-                {
-                    var match = Regex.Match(HTransFile, @"h\\list\\.*personality_voice_(c\d\d)");
+                        if (match.Groups[1].Value != "")
+                            charatype = match.Groups[1].Value;
+                        break;
+                    }
+                    case "h":
+                    {
+                        var match = Regex.Match(hTransFile, @"h\\list\\.*personality_voice_(c\d\d)");
 
-                    if (match.Groups[1].Value != "")
-                        charatype = match.Groups[1].Value;
-                }
-                if (category == "communication")
-                {
-                    var match = Regex.Match(HTransFile, @"communication\\.*communication_(\d\d)");
+                        if (match.Groups[1].Value != "")
+                            charatype = match.Groups[1].Value;
+                        break;
+                    }
+                    case "communication":
+                    {
+                        var match = Regex.Match(hTransFile, @"communication\\.*communication_(\d\d)");
 
-                    if (match.Groups[1].Value != "")
-                        charatype = "c" + match.Groups[1].Value;
+                        if (match.Groups[1].Value != "")
+                            charatype = "c" + match.Groups[1].Value;
+                        break;
+                    }
                 }
+
                 if (charatype != "")
-                {
                     charactertypes.Add(charatype);
-                    //Console.WriteLine(charatype);
-                }
+                //Console.WriteLine(charatype);
             }
 
-            foreach (string selectedcharacter in charactertypes)
+            foreach (var selectedcharacter in charactertypes)
             {
-                Console.WriteLine($"Dealing with {selectedcharacter} in {FolderName}");
-                string CSVFileName = $"CSVFiles\\{selectedcharacter}.csv";
-                string ErrorFileName = $"CSVFiles\\Errors.txt";
-                bool FirstLine = false;
+                Console.WriteLine($"Dealing with {selectedcharacter} in {folderName}");
+                var csvFileName = $"CSVFiles\\{selectedcharacter}.csv";
+                var errorFileName = "CSVFiles\\Errors.txt";
+                var firstLine = false;
 
                 if (!Directory.Exists("CSVFiles"))
                     Directory.CreateDirectory("CSVFiles");
 
-                if (!File.Exists(CSVFileName))
-                    FirstLine = true;
+                if (!File.Exists(csvFileName))
+                    firstLine = true;
 
-                StreamWriter outputfile = new StreamWriter(CSVFileName, true);
+                var outputfile = new StreamWriter(csvFileName, true);
 
-                foreach (string HTransFile in Directory.EnumerateFiles(WorkingDir, $"*.txt", SearchOption.AllDirectories))
+                foreach (var hTransFile in Directory.EnumerateFiles(workingDir, "*.txt", SearchOption.AllDirectories))
                 {
-                    bool newDoc = true;
-                    string charatype = "";
-                    string[] HTranslationFiles = File.ReadAllLines(HTransFile);
+                    var newDoc = true;
+                    var charatype = "";
+                    var hTranslationFiles = File.ReadAllLines(hTransFile);
 
-                    if (HTransFile.Contains("adv\\"))
+                    if (hTransFile.Contains("adv\\"))
                         category = "adv";
-                    else if (HTransFile.Contains("h\\"))
+                    else if (hTransFile.Contains("h\\"))
                         category = "h";
-                    else if (HTransFile.Contains("communication\\"))
+                    else if (hTransFile.Contains("communication\\"))
                         category = "communication";
 
-                    if (category == FolderName)
+                    if (category != folderName) continue;
+                    switch (category)
                     {
-
-                        if (category == "adv")
+                        case "adv":
                         {
-                            var match = Regex.Match(HTransFile, @"adv\\\w+\\(c\d\d)\\");
-
-                            if (match.Groups[1].Value != "")
-                                charatype = match.Groups[1].Value;
-                        }
-                        if (category == "h")
-                        {
-                            var match = Regex.Match(HTransFile, @"h\\list\\.*personality_voice_(c\d\d)");
+                            var match = Regex.Match(hTransFile, @"adv\\\w+\\(c\d\d)\\");
 
                             if (match.Groups[1].Value != "")
                                 charatype = match.Groups[1].Value;
+                            break;
                         }
-                        if (category == "communication")
+                        case "h":
                         {
-                            var match = Regex.Match(HTransFile, @"communication\\.*communication_(\d\d)");
+                            var match = Regex.Match(hTransFile, @"h\\list\\.*personality_voice_(c\d\d)");
+
+                            if (match.Groups[1].Value != "")
+                                charatype = match.Groups[1].Value;
+                            break;
+                        }
+                        case "communication":
+                        {
+                            var match = Regex.Match(hTransFile, @"communication\\.*communication_(\d\d)");
 
                             if (match.Groups[1].Value != "")
                                 charatype = "c" + match.Groups[1].Value;
-                        }
-
-                        if (charatype == selectedcharacter)
-                        {
-
-
-
-                            try
-                            {
-                                {
-                                    foreach (string line in HTranslationFiles)
-                                    {
-                                        if (FirstLine)
-                                        {
-                                            outputfile.WriteLine("Original (JP);Current Fantrans (EN);TL Note");
-                                            FirstLine = false;
-                                        }
-
-                                        if (newDoc)
-                                        {
-                                            outputfile.WriteLine($";;\n;;\n{HTransFile};;");
-                                            newDoc = false;
-                                        }
-
-                                        if (line != "" && line != " ")
-                                        {
-                                            string[] splitLine = line.Replace(@"/", "").Split('=');
-                                            outputfile.WriteLine($"{splitLine[0]};{splitLine[1]};");
-                                        }
-                                        else
-                                        {
-                                            outputfile.WriteLine($";;");
-                                        }
-                                    }
-                                }
-                            }
-                            catch (Exception e)
-                            {
-                                Console.WriteLine($"Problem occurred in {HTransFile}!");
-                                StreamWriter errorfile = new StreamWriter(ErrorFileName, true);
-                                errorfile.WriteLine($"Problem occurred in {HTransFile}!");
-                                errorfile.Close();
-                                System.Diagnostics.Debug.WriteLine(e);
-                            }
-
+                            break;
                         }
                     }
 
+                    if (charatype != selectedcharacter) continue;
+                    try
+                    {
+                        {
+                            foreach (var line in hTranslationFiles)
+                            {
+                                if (firstLine)
+                                {
+                                    outputfile.WriteLine("Original (JP);Current Fantrans (EN);TL Note");
+                                    firstLine = false;
+                                }
+
+                                if (newDoc)
+                                {
+                                    outputfile.WriteLine($";;\n;;\n{hTransFile};;");
+                                    newDoc = false;
+                                }
+
+                                if (line != "" && line != " ")
+                                {
+                                    var splitLine = line.Replace(@"/", "").Split('=');
+                                    outputfile.WriteLine($"{splitLine[0]};{splitLine[1]};");
+                                }
+                                else
+                                {
+                                    outputfile.WriteLine(";;");
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine($"Problem occurred in {hTransFile}!");
+                        var errorfile = new StreamWriter(errorFileName, true);
+                        errorfile.WriteLine($"Problem occurred in {hTransFile}!");
+                        errorfile.Close();
+                        Debug.WriteLine(e);
+                    }
                 }
+
                 outputfile.Close();
             }
         }
 
         private static void FillHDupes()
         {
-            string[] master = File.ReadAllLines("master.txt");
-            string prevStepTL = "1translation\\abdata\\h";
+            var master = File.ReadAllLines("master.txt");
+            var prevStepTl = "1translation\\abdata\\h";
             var filenumber = 0;
 
-            List<string> CopyDirs = new List<string>
+            var copyDirs = new List<string>
             {
                 "adv",
                 "communication"
             };
 
-            foreach (string item in CopyDirs)
+            foreach (var item in copyDirs)
             {
-                string SourcePath = $"1translation\\abdata\\{item}";
-                string DestinationPath = $"2translation\\abdata\\{item}";
+                var sourcePath = $"1translation\\abdata\\{item}";
+                var destinationPath = $"2translation\\abdata\\{item}";
 
                 // Creating directories
-                foreach (string dirPath in Directory.GetDirectories(SourcePath, "*.*",
+                foreach (var dirPath in Directory.GetDirectories(sourcePath, "*.*",
                     SearchOption.AllDirectories))
-                    Directory.CreateDirectory(dirPath.Replace(SourcePath, DestinationPath));
+                    Directory.CreateDirectory(dirPath.Replace(sourcePath, destinationPath));
 
                 // Copying files, replacing duplicates
-                foreach (string newPath in Directory.GetFiles(SourcePath, "*.txt",
+                foreach (var newPath in Directory.GetFiles(sourcePath, "*.txt",
                     SearchOption.AllDirectories))
-                    File.Copy(newPath, newPath.Replace(SourcePath, DestinationPath), true);
+                    File.Copy(newPath, newPath.Replace(sourcePath, destinationPath), true);
             }
 
-            foreach (string HTransFile in Directory.EnumerateFiles(prevStepTL, "*.txt", SearchOption.AllDirectories))
+            foreach (var hTransFile in Directory.EnumerateFiles(prevStepTl, "*.txt", SearchOption.AllDirectories))
             {
-                string[] HTranslationFiles = File.ReadAllLines(HTransFile); // Filename obtained
-                string outputdir = HTransFile.Replace("1translation", "2translation").Remove(HTransFile.Length - 15, 15);
+                var hTranslationFiles = File.ReadAllLines(hTransFile); // Filename obtained
+                var outputdir = hTransFile.Replace("1translation", "2translation").Remove(hTransFile.Length - 15, 15);
                 filenumber++;
                 Console.Clear();
-                Console.WriteLine("Working on file " + filenumber + " out of " + HTranslationFiles.Length + "...");
+                Console.WriteLine("Working on file " + filenumber + " out of " + hTranslationFiles.Length + "...");
 
                 if (!Directory.Exists(outputdir))
                     Directory.CreateDirectory(outputdir);
 
-                StreamWriter file = new StreamWriter($"{outputdir}\\translation.txt", true);
+                var file = new StreamWriter($"{outputdir}\\translation.txt", true);
 
-                foreach (string oldLine in HTranslationFiles)
+                foreach (var oldLine in hTranslationFiles)
                 {
-                    string[] splitOldLine = oldLine.Split('='); // splitOldLine[0] for comparison
-                    bool hit = false;
+                    var splitOldLine = oldLine.Split('='); // splitOldLine[0] for comparison
+                    var hit = false;
 
-                    foreach (string masterLine in master)
+                    foreach (var masterLine in master)
                     {
-                        string[] splitMasterLine = masterLine.Split('='); // splitMasterLine[0] for comparison
+                        var splitMasterLine = masterLine.Split('='); // splitMasterLine[0] for comparison
 
 
-                        if (splitOldLine[0] == splitMasterLine[0] && !hit)
-                        {
-                            file.Write(splitMasterLine[0] + "=" + splitMasterLine[1] + "\n");
-                            hit = true;
-                        }
+                        if (splitOldLine[0] != splitMasterLine[0] || hit) continue;
+                        file.Write(splitMasterLine[0] + "=" + splitMasterLine[1] + "\n");
+                        hit = true;
                     }
 
                     if (splitOldLine[0] == "")
                         file.Write("\n");
                     else if (!hit)
-                    {
                         try
                         {
                             file.Write(splitOldLine[0] + "=" + splitOldLine[1] + "\n");
@@ -499,38 +494,36 @@ namespace TranslationConverter
                         {
                             Console.WriteLine(e);
                         }
-                    }
-
                 }
 
                 file.Close();
             }
         }
 
-        private static void CleanupTranslation(string OldDir)
+        private static void CleanupTranslation(string oldDir)
         {
-            string sDir = OldDir;
+            var sDir = oldDir;
 
             if (Directory.Exists("3translation"))
                 Directory.Delete("3translation", true);
 
-            foreach (string TranslationFile in Directory.EnumerateFiles(sDir, "*.txt", SearchOption.AllDirectories))
+            foreach (var translationFile in Directory.EnumerateFiles(sDir, "*.txt", SearchOption.AllDirectories))
             {
-                string[] TranslationLine = File.ReadAllLines(TranslationFile);
-                string TranslationOutputDir = "3" + TranslationFile.Remove(TranslationFile.Length - 15, 15).Remove(0, 1);
-                string TranslationOutputFile = TranslationOutputDir + "translation.txt";
+                var translationLine = File.ReadAllLines(translationFile);
+                var translationOutputDir = "3" + translationFile.Remove(translationFile.Length - 15, 15).Remove(0, 1);
+                var translationOutputFile = translationOutputDir + "translation.txt";
 
-                Console.WriteLine(TranslationOutputFile);
-                foreach (string TranslationSentence in TranslationLine)
+                Console.WriteLine(translationOutputFile);
+                foreach (var translationSentence in translationLine)
                 {
-                    string[] splittrans = TranslationSentence.Split('=');
-                    Directory.CreateDirectory(TranslationOutputDir);
+                    var splittrans = translationSentence.Split('=');
+                    Directory.CreateDirectory(translationOutputDir);
                     try
                     {
                         splittrans[1] = RunFix(splittrans[1]);
-                        string donetrans = splittrans[0] + "=" + splittrans[1];
+                        var donetrans = splittrans[0] + "=" + splittrans[1];
 
-                        using StreamWriter hit = new StreamWriter(TranslationOutputFile, true);
+                        using var hit = new StreamWriter(translationOutputFile, true);
                         hit.WriteLine(splittrans[0] + "=" + splittrans[1]);
                         hit.Close();
                     }
@@ -540,67 +533,76 @@ namespace TranslationConverter
                     }
                 }
             }
+
             Console.Clear();
         }
 
-        private static void MakeCSV( string WorkingFolder)
+        private static void MakeCsv(string workingFolder)
         {
-            string workDir = WorkingFolder;
+            var workDir = workingFolder;
             File.Delete("newTranslation.csv");
-            foreach (string HTransFile in Directory.EnumerateFiles(workDir + "\\abdata\\adv", "*.txt", SearchOption.AllDirectories))
+            foreach (var hTransFile in Directory.EnumerateFiles(workDir + "\\abdata\\adv", "*.txt",
+                SearchOption.AllDirectories))
             {
-                string[] HTranslationFiles = File.ReadAllLines(HTransFile);
-                StreamWriter file = new StreamWriter($"newTranslation.csv", true);
+                var hTranslationFiles = File.ReadAllLines(hTransFile);
+                var file = new StreamWriter("newTranslation.csv", true);
 
-                file.Write(HTransFile.Remove(0, 13) + "\n");
-                Console.WriteLine(HTransFile + ";;");
+                file.Write(hTransFile.Remove(0, 13) + "\n");
+                Console.WriteLine(hTransFile + ";;");
 
-                foreach (string line in HTranslationFiles)
+                foreach (var line in hTranslationFiles)
                 {
-                    string[] exportline = line.Split('=');
+                    var exportline = line.Split('=');
                     if (exportline[0] == "")
                         file.Write(";;\n");
                     else
                         file.Write(exportline[0] + ";" + exportline[1] + ";" + "\n");
                 }
+
                 file.Write(";;\n;;\n");
                 file.Close();
             }
-            foreach (string HTransFile in Directory.EnumerateFiles(workDir + "\\abdata\\communication", "*.txt", SearchOption.AllDirectories))
+
+            foreach (var hTransFile in Directory.EnumerateFiles(workDir + "\\abdata\\communication", "*.txt",
+                SearchOption.AllDirectories))
             {
-                string[] HTranslationFiles = File.ReadAllLines(HTransFile);
-                StreamWriter file = new StreamWriter($"newTranslation.csv", true);
+                var hTranslationFiles = File.ReadAllLines(hTransFile);
+                var file = new StreamWriter("newTranslation.csv", true);
 
-                file.Write(HTransFile.Remove(0, 13) + "\n");
-                Console.WriteLine(HTransFile + ";;");
+                file.Write(hTransFile.Remove(0, 13) + "\n");
+                Console.WriteLine(hTransFile + ";;");
 
-                foreach (string line in HTranslationFiles)
+                foreach (var line in hTranslationFiles)
                 {
-                    string[] exportline = line.Split('=');
+                    var exportline = line.Split('=');
                     if (exportline[0] == "")
                         file.Write(";;\n");
                     else
                         file.Write(exportline[0] + ";" + exportline[1] + ";" + "\n");
                 }
+
                 file.Write(";;\n;;\n");
                 file.Close();
             }
-            foreach (string HTransFile in Directory.EnumerateFiles(workDir + "\\abdata\\h", "*.txt", SearchOption.AllDirectories))
+
+            foreach (var hTransFile in Directory.EnumerateFiles(workDir + "\\abdata\\h", "*.txt",
+                SearchOption.AllDirectories))
             {
-                string[] HTranslationFiles = File.ReadAllLines(HTransFile);
-                StreamWriter file = new StreamWriter($"newTranslation.csv", true);
+                var hTranslationFiles = File.ReadAllLines(hTransFile);
+                var file = new StreamWriter("newTranslation.csv", true);
 
-                file.Write(HTransFile.Remove(0, 13) + "\n");
-                Console.WriteLine(HTransFile + ";;");
+                file.Write(hTransFile.Remove(0, 13) + "\n");
+                Console.WriteLine(hTransFile + ";;");
 
-                foreach (string line in HTranslationFiles)
+                foreach (var line in hTranslationFiles)
                 {
-                    string[] exportline = line.Split('=');
+                    var exportline = line.Split('=');
                     if (exportline[0] == "")
                         file.Write(";;\n");
                     else
                         file.Write(exportline[0] + ";" + exportline[1] + ";" + "\n");
                 }
+
                 file.Write(";;\n;;\n");
                 file.Close();
             }
@@ -608,7 +610,7 @@ namespace TranslationConverter
 
         public static string RunFix(string translation)
         {
-            string replacer = translation;
+            var replacer = translation;
             replacer = replacer.Replace("…", "...");
             //replacer = replacer.Replace("..", "...");
             //replacer = replacer.Replace("....", "...");
