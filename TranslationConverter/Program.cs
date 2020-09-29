@@ -320,6 +320,9 @@ namespace TranslationConverter
                         var match = Regex.Match(hTransFile, @"communication\\.*communication_(\d\d)");
 
                         if (match.Groups[1].Value != "")
+                            match = Regex.Match(hTransFile, @"communication\\.*optiondisplayitems_(\d\d)");
+
+                        if (match.Groups[1].Value != "")
                             charatype = "c" + match.Groups[1].Value;
                         break;
                     }
@@ -380,6 +383,9 @@ namespace TranslationConverter
                         case "communication":
                         {
                             var match = Regex.Match(hTransFile, @"communication\\.*communication_(\d\d)");
+
+                            if (match.Groups[1].Value != "")
+                                    match = Regex.Match(hTransFile, @"communication\\.*optiondisplayitems_(\d\d)");
 
                             if (match.Groups[1].Value != "")
                                 charatype = "c" + match.Groups[1].Value;
