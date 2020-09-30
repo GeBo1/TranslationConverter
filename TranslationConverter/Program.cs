@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -114,6 +115,9 @@ namespace TranslationConverter
                 case "66":
                     JustAQuicky("csvfile.csv", "Treated");
                     goto Restart;
+                case "67":
+                    MissingEnding("Treated_Cleaned.csv", "MissingEnding.csv");
+                    goto Restart;
                 case "q":
                     Environment.Exit(0);
                     break;
@@ -121,6 +125,51 @@ namespace TranslationConverter
                     Console.WriteLine("Invalid key");
                     goto Restart;
             }
+        }
+
+        private static void MissingEnding(string inputFile, string outputFile)
+        {
+            var lines = File.ReadAllLines(inputFile);
+            int number = 0;
+
+            StreamWriter writer = new StreamWriter(outputFile, false);
+            foreach (string line in lines)
+            {
+                string[] splitLine = line.Split(';');
+                number++;
+                bool isActualLine = splitLine[1] != "";
+                bool missingEnd = false;
+
+                if(!isActualLine)
+                {
+                    writer.WriteLine($"{line};");
+                    continue;
+                }
+
+                string theThingIReallyCareAbout = splitLine[1].Substring(splitLine[1].Length - 1);
+                string theThingIReallyCareAbout2 = splitLine[1].Substring(0,1);
+                string lineCut = splitLine[1].Remove(0, splitLine[1].Length - 1);
+                if (splitLine[1] != "Pastor" && splitLine[1] != "Mob" && theThingIReallyCareAbout != "♪" &&
+                    theThingIReallyCareAbout != "]" && theThingIReallyCareAbout != "*" &&
+                    theThingIReallyCareAbout != "』" && theThingIReallyCareAbout != "-" &&
+                    theThingIReallyCareAbout != "~" && theThingIReallyCareAbout != "\"" &&
+                    theThingIReallyCareAbout != "`" && theThingIReallyCareAbout != ")" &&
+                    theThingIReallyCareAbout != "." && theThingIReallyCareAbout != "!" &&
+                    theThingIReallyCareAbout != "?" && (!line.Contains(".txt") && !line.Contains("Current Fantrans")))
+                {
+                    writer.WriteLine($"{splitLine[0]};{splitLine[1]};{splitLine[2]};Punctuation");
+                }
+                else if (theThingIReallyCareAbout2 == "(")
+                {
+
+                    writer.WriteLine($"{splitLine[0]};{splitLine[1]};{splitLine[2]};Caution");
+                }
+                else
+                {
+                    writer.WriteLine($"{splitLine[0]};{splitLine[1]};{splitLine[2]};");
+                }
+            }
+            writer.Close();
         }
 
         private static void JustAQuicky(string inputFile, string outputFile)
@@ -136,9 +185,9 @@ namespace TranslationConverter
             if (File.Exists($"{outputFile}_Cleaned.csv"))
                 File.Delete($"{outputFile}_Cleaned.csv");
 
-            var hMaster = new StreamWriter("master.txt", true);
-            var endFile = new StreamWriter($"{outputFile}_DupeChecked.csv", true);
-            var endFileClean = new StreamWriter($"{outputFile}_Cleaned.csv", true);
+            var hMaster = new StreamWriter("master.txt", false);
+            var endFile = new StreamWriter($"{outputFile}_DupeChecked.csv", false);
+            var endFileClean = new StreamWriter($"{outputFile}_Cleaned.csv", false);
 
             foreach (var line in lines)
             {
@@ -190,7 +239,8 @@ namespace TranslationConverter
                 var splittrans = line.Split(';');
                 try
                 {
-                    splittrans[1] = RunFix(splittrans[1]);
+                    if(splittrans[1].Length >= 1)
+                        splittrans[1] = RunFix(splittrans[1]);
                     var donetrans = $"{splittrans[0]};{splittrans[1]};{splittrans[2]}";
 
                     endFileClean.WriteLine(donetrans);
@@ -621,6 +671,31 @@ namespace TranslationConverter
         public static string RunFix(string translation)
         {
             var replacer = translation;
+
+            if (replacer == "")
+            {
+                return replacer.TrimEnd();
+            }
+
+            List<string> killstringList = new List<string>
+            {
+                "(Anal Virgin)",
+                "(Limited to lovers)",
+                "(Beginning Dialogue)",
+                "(Rejection and Removal)",
+                "(Too Intense, Rejected)",
+                "(Rejection)",
+                "CHOICE:",
+                "(Rejection and Removal)",
+                "(First Kiss)",
+                "(Rejection and Removal)",
+                "(Virgin)",
+                "(First Kiss)",
+                "(Limited to lovers)",
+                "(Limited to the first touch during an H-scene)",
+                "(First Insertion)"
+            };
+
             replacer = replacer.Replace("…", "...");
             //replacer = replacer.Replace("..", "...");
             //replacer = replacer.Replace("....", "...");
@@ -629,6 +704,11 @@ namespace TranslationConverter
             replacer = Regex.Replace(replacer, @"[\s](?<!\.)(\.{3})+(?!\.)([\S]|$)", "$2$3 $4");
             replacer = Regex.Replace(replacer, @"(^|[^\.])(\.{2})([^\.]|$)", "$1$2.$3");
             replacer = Regex.Replace(replacer, "[ ]{2,}", " ");
+
+            foreach (string entry in killstringList)
+            {
+                replacer = replacer.Replace(entry, "");
+            }
 
             return replacer.TrimEnd();
         }
