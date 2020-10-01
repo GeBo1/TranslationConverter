@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -47,6 +48,7 @@ namespace TranslationConverter
             Console.WriteLine("4. Convert XUA folder to CSV");
             Console.WriteLine("5. Turn h duplicate checked folder back into CSV");
             Console.WriteLine("6. Turn cleanuped folder back into CSV");
+            Console.WriteLine("7. Remove Steam comparison from CSV");
             Console.WriteLine("66. Create dupechecked and cleaned CSVs");
             Console.WriteLine("Q. Exit");
             Console.WriteLine("");
@@ -112,6 +114,12 @@ namespace TranslationConverter
                     MakeCsv("3translation");
                     Console.Clear();
                     goto Restart;
+                case "7":
+                    if (inputfile == "csv")
+                        RemoveSteamComparison(args[0], "SteamCleaned.csv");
+                    else
+                        Console.WriteLine("You didn't pass an csv file!");
+                    goto Restart;
                 case "66":
                     JustAQuicky("csvfile.csv", "Treated");
                     goto Restart;
@@ -124,6 +132,21 @@ namespace TranslationConverter
                 default:
                     Console.WriteLine("Invalid key");
                     goto Restart;
+            }
+        }
+
+        private static void RemoveSteamComparison(string inputFile, string outputFile)
+        {
+            var lines = File.ReadAllLines(inputFile);
+            if (lines[0].Contains("Current Steamtrans"))
+            {
+                StreamWriter writer = new StreamWriter(outputFile, false);
+                foreach (string line in lines)
+                {
+                    string[] lineSplit = line.Split(';');
+                    writer.WriteLine($"{lineSplit[0]};{lineSplit[1]};{lineSplit[3]}");
+                }
+                writer.Close();
             }
         }
 
