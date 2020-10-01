@@ -443,6 +443,8 @@ namespace TranslationConverter
                         }
                     }
 
+                    bool steamAlternativeExists = File.Exists(hTransFile.Replace("abdata", "abdatasteam"));
+
                     if (charatype != selectedcharacter) continue;
                     try
                     {
@@ -451,24 +453,57 @@ namespace TranslationConverter
                             {
                                 if (firstLine)
                                 {
-                                    outputfile.WriteLine("Original (JP);Current Fantrans (EN);TL Note");
+                                    outputfile.WriteLine(steamAlternativeExists
+                                        ? "Original;Current Fantrans;Current Steamtrans;TL Note"
+                                        : "Original;Current Fantrans;TL Note");
+
                                     firstLine = false;
                                 }
 
                                 if (newDoc)
                                 {
-                                    outputfile.WriteLine($";;\n;;\n{hTransFile};;");
+                                    outputfile.WriteLine(steamAlternativeExists
+                                        ? $";;\n;;\n{hTransFile};;;"
+                                        : $";;\n;;\n{hTransFile};;");
+
                                     newDoc = false;
                                 }
 
                                 if (line != "" && line != " ")
                                 {
                                     var splitLine = line.Replace(@"/", "").Split('=');
-                                    outputfile.WriteLine($"{splitLine[0]};{splitLine[1]};");
+                                    bool steamHit = false;
+                                    if (steamAlternativeExists)
+                                    {
+                                        string[] steamLines = File.ReadAllLines(hTransFile.Replace("abdata", "abdatasteam"));
+
+                                        foreach (var steamLine in steamLines)
+                                        {
+                                            var splitSteamLine = steamLine.Replace(@"/", "").Split('=');
+                                            if (splitSteamLine[0] != splitLine[0] && splitSteamLine[0] != "")
+                                                continue;
+
+                                            if (steamHit)
+                                                continue;
+
+                                            outputfile.WriteLine($"{splitLine[0]};{splitLine[1]};{splitSteamLine[1]};");
+                                            steamHit = true;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        outputfile.WriteLine(steamAlternativeExists
+                                            ? $"{splitLine[0]};{splitLine[1]};;"
+                                            : $"{splitLine[0]};{splitLine[1]};");
+                                    }
+
+                                    if(!steamHit && steamAlternativeExists)
+                                        outputfile.WriteLine($"{splitLine[0]};{splitLine[1]};;");
+
                                 }
                                 else
                                 {
-                                    outputfile.WriteLine(";;");
+                                    outputfile.WriteLine(steamAlternativeExists ? ";;;" : ";;");
                                 }
                             }
                         }
