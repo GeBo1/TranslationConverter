@@ -126,6 +126,9 @@ namespace TranslationConverter
                 case "67":
                     MissingEnding("Treated_Cleaned.csv", "MissingEnding.csv");
                     goto Restart;
+                case "99":
+                    AppendToAbdata();
+                    goto Restart;
                 case "q":
                     Environment.Exit(0);
                     break;
@@ -133,6 +136,116 @@ namespace TranslationConverter
                     Console.WriteLine("Invalid key");
                     goto Restart;
             }
+        }
+
+        private static void AppendToAbdata()
+        {
+            if (!Directory.Exists("3translation"))
+            {
+                return;
+            }
+
+            foreach (var hTransFile in Directory.EnumerateFiles("3translation", "*.txt",
+                SearchOption.AllDirectories))
+            {
+                var outputDir = hTransFile.Replace("3translation", "4translation");
+                var currentoriginal = hTransFile.Replace("3translation\\", "");
+                var tl3file = File.ReadAllLines(hTransFile);
+                var originalfile = File.ReadAllLines(currentoriginal);
+
+
+                var tlPath = outputDir.Remove(outputDir.Length - 15, 15);
+
+                if (!Directory.Exists(tlPath))
+                    Directory.CreateDirectory(tlPath);
+
+                var outputfile = new StreamWriter(tlPath + "translation.txt");
+
+                foreach (var currentLine in originalfile)
+                {
+                    bool match = false;
+
+                    var currentLineSplit = currentLine.Replace("//","").Split("=");
+
+                    foreach (var ofileLine in tl3file)
+                    {
+                        var ofileLineSplit = ofileLine.Replace("//", "").Split("=");
+                        if (ofileLineSplit[0] == currentLineSplit[0])
+                            match = true;
+
+                        if (match)
+                        {
+                            outputfile.WriteLine(ofileLine);
+                            break;
+                        }
+                    }
+
+                    if (!match)
+                    {
+                        outputfile.WriteLine(currentLine);
+                    }
+                }
+                outputfile.Close();
+            }
+
+            //var lines = File.ReadAllLines(inputFile);
+            //var linecount = 0;
+
+                //foreach (var line in lines)
+                //{
+                //    var csvsplit = line.Split(';');
+                //    string currentOriginal = "shouldn't happen";
+
+                //    if (csvsplit[0].Contains(".txt"))
+                //    {
+                //        currentOriginal = csvsplit[0];
+                //    }
+                //    else if (csvsplit[1] == "")
+                //    {
+
+                //    }
+                //    else
+                //    {
+                //        replacer = Regex.Replace(replacer, "[ ]{2,}", " ");
+                //    }
+                //}
+        }
+
+        private static void MakeSerialRegister()
+        {
+            var serialRegister = "SerialReg.txt";
+            int serial = 0;
+
+            // Deleting existing serialRegister
+            if(File.Exists(serialRegister))
+                File.Delete(serialRegister);
+
+            var serialWorker = new StreamWriter(serialRegister, false);
+
+            // Deleting other stuffs
+            if(Directory.Exists("translation1"))
+                Directory.Delete("translation1");
+            if (Directory.Exists("translation2"))
+                Directory.Delete("translation2");
+            if (Directory.Exists("3translation"))
+                Directory.Delete("3translation");
+
+            // Reading the results, and producing new register
+            foreach (var hTransFile in Directory.EnumerateFiles("abdata", "*.txt",
+                SearchOption.AllDirectories))
+            {
+                var hTranslationFiles = File.ReadAllLines(hTransFile);
+                foreach (var line in hTranslationFiles)
+                {
+                    var exportline = line.Split('=');
+                    if (exportline[0] != "")
+                    {
+                        serial++;
+                        serialWorker.WriteLine(serial + ";" + exportline[0]);
+                    }
+                }
+            }
+            serialWorker.Close();
         }
 
         private static void RemoveSteamComparison(string inputFile, string outputFile)
@@ -353,7 +466,7 @@ namespace TranslationConverter
             Console.Clear();
         }
 
-        public static void ReadXua(string workingDir, string folderName)
+        private static void ReadXua(string workingDir, string folderName)
         {
             var category = "";
             var charactertypes = new HashSet<string>();
