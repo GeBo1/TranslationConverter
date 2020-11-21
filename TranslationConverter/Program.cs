@@ -129,12 +129,24 @@ namespace TranslationConverter
                 case "99":
                     AppendToAbdata();
                     goto Restart;
+                case "m":
+                    cleanRandom();
+                    goto Restart;
                 case "q":
                     Environment.Exit(0);
                     break;
                 default:
                     Console.WriteLine("Invalid key");
                     goto Restart;
+            }
+        }
+
+        private static void cleanRandom()
+        {
+            foreach (var hTransFile in Directory.EnumerateFiles("random", "*.txt",
+                SearchOption.AllDirectories))
+            {
+                RunFix(hTransFile);
             }
         }
 
