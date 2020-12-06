@@ -135,10 +135,93 @@ namespace TranslationConverter
                 case "q":
                     Environment.Exit(0);
                     break;
+                case "yo":
+                    CopyMess();
+                    break;
                 default:
                     Console.WriteLine("Invalid key");
                     goto Restart;
             }
+        }
+
+        //private static void CopyMess()
+        //{
+        //    var newf = File.ReadAllLines(@"c33-newdump.csv");
+        //    var oldf = File.ReadAllLines(@"c33-olddump.csv");
+        //    var newspl = newf.Select(x => x.Split(new string[] { ";" }, StringSplitOptions.None)).ToList();
+        //    var oldspl = oldf.Select(x => x.Split(new string[] { ";" }, StringSplitOptions.None)).ToList();
+        //    foreach (var newline in newspl)
+        //    {
+        //        var oldline = oldspl.FirstOrDefault(x => x[0].Replace("　", " ") == newline[0].Replace("　", " "));
+        //        if (oldline != null)
+        //        {
+        //            newline[1] = oldline[1];
+        //            newline[2] = oldline[2];
+        //        }
+        //    }
+        //    var output = string.Join("\n", newspl.Select(x => string.Join(";", x)));
+        //    File.WriteAllText(@"test.csv", output);
+        //}
+
+        private static void CopyMess()
+        {
+            // Purpose: Compare two CSV files and populate translations from one to the other.
+
+            // Declaring files
+            var OldDump = "c37-olddump.csv";
+            var NewDump = "c37-newdump.csv";
+            var EndResult = "c37-merged.csv";
+            string currentNewABData = "";
+            string currentOldABData = "";
+            string finishedLine = "";
+
+            // Reading all lines
+            var OldLines = File.ReadAllLines(OldDump);
+            var NewLines = File.ReadAllLines(NewDump);
+
+            // Deleting results file if it already exists
+            if (File.Exists(EndResult))
+                File.Delete(EndResult);
+
+            // Opening file for writing
+            var EndWriter = new StreamWriter(EndResult, true);
+
+            // Let's get to work
+            foreach (var NewDumpLine in NewLines)
+            {
+                // Split up the current line
+                var newDumpSplit = NewDumpLine.Split(';');
+
+                finishedLine = "";
+                bool match = false;
+                if (newDumpSplit[0].Contains("abdata"))
+                    currentNewABData = newDumpSplit[0];
+
+                foreach (var oldDumpLine in OldLines)
+                {
+                    // Split up the old dump as well
+                    var oldDumpSplit = oldDumpLine.Split(';');
+
+                    // Making sure we're in the right folder
+                    if (oldDumpSplit[0].Contains("abdata"))
+                        currentOldABData = oldDumpSplit[0];
+
+                    //remove whitespaces
+                    string cleancompareOld = Regex.Replace(oldDumpSplit[0], @"\s", ""); ;
+                    string cleancompareNew = Regex.Replace(newDumpSplit[0], @"\s", ""); ;
+
+                    if (currentOldABData == currentNewABData && cleancompareOld == cleancompareNew && !match && NewDumpLine != ";;")
+                    {
+                        match = true;
+                        finishedLine = $"{newDumpSplit[0]};{oldDumpSplit[1]};{oldDumpSplit[2]}";
+                    }
+                }
+
+                EndWriter.WriteLine(finishedLine != "" ? finishedLine : NewDumpLine);
+            }
+
+            // Closing file
+            EndWriter.Close();
         }
 
         private static void cleanRandom()
