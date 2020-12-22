@@ -136,44 +136,166 @@ namespace TranslationConverter
                     Environment.Exit(0);
                     break;
                 case "yo":
-                    CopyMess();
-                    break;
+                    Console.Clear();
+                    Console.WriteLine("What character type? (blank for all)");
+                    var CharChoice = Console.ReadLine().ToLower();
+                    if (CharChoice == "")
+                    {
+                        foreach (var characterFile in Directory.EnumerateFiles("DumpOld", "*.csv"))
+                        {
+                            CharChoice = characterFile.Remove(characterFile.Length - 4, 4).Remove(0, 9);
+                            CopyMess(CharChoice);
+                        }
+                    }
+                    else
+                    {
+                        CopyMess(CharChoice);
+                    }
+                    goto Restart;
+                case "yo2":
+                    Console.Clear();
+                    Console.WriteLine("What character type?");
+                    var CharChoice2 = Console.ReadLine().ToLower();
+                    if (CharChoice2 == "")
+                    {
+                        foreach (var characterFile in Directory.EnumerateFiles("DumpMerged", "*.csv"))
+                        {
+                            CharChoice = characterFile.Remove(characterFile.Length - 4, 4).Remove(0, 12);
+                            ReadCsv($"DumpMerged\\c{CharChoice}.csv");
+                        }
+                    }
+                    goto Restart;
+                case "marco":
+                    Console.Clear();
+                    Console.WriteLine("What character type? (blank for all)");
+                    var CharChoiceMarco = Console.ReadLine().ToLower();
+                    if (CharChoiceMarco == "")
+                    {
+                        foreach (var characterFile in Directory.EnumerateFiles("DumpOld", "*.csv"))
+                        {
+                            CharChoiceMarco = characterFile.Remove(characterFile.Length - 4, 4).Remove(0, 9);
+                            marco(CharChoiceMarco);
+                        }
+                    }
+                    else
+                    {
+                        marco(CharChoiceMarco);
+                    }
+                    goto Restart;
+                case "marco2":
+                    Console.Clear();
+                    MarcoXua("abdataAll");
+                    goto Restart;
                 default:
                     Console.WriteLine("Invalid key");
                     goto Restart;
             }
         }
 
-        //private static void CopyMess()
-        //{
-        //    var newf = File.ReadAllLines(@"c33-newdump.csv");
-        //    var oldf = File.ReadAllLines(@"c33-olddump.csv");
-        //    var newspl = newf.Select(x => x.Split(new string[] { ";" }, StringSplitOptions.None)).ToList();
-        //    var oldspl = oldf.Select(x => x.Split(new string[] { ";" }, StringSplitOptions.None)).ToList();
-        //    foreach (var newline in newspl)
-        //    {
-        //        var oldline = oldspl.FirstOrDefault(x => x[0].Replace("　", " ") == newline[0].Replace("　", " "));
-        //        if (oldline != null)
-        //        {
-        //            newline[1] = oldline[1];
-        //            newline[2] = oldline[2];
-        //        }
-        //    }
-        //    var output = string.Join("\n", newspl.Select(x => string.Join(";", x)));
-        //    File.WriteAllText(@"test.csv", output);
-        //}
-
-        private static void CopyMess()
+        private static void marco(string CharChoice)
         {
-            // Purpose: Compare two CSV files and populate translations from one to the other.
+            var startdoc = $"DumpMerged\\c{CharChoice}.csv";
+            var enddoc = "marco.csv";
+            string endline = "";
 
+            var EndWriter = new StreamWriter(enddoc, true);
+            EndWriter.AutoFlush = true;
+
+            var previous = new HashSet<string>();
+
+            foreach (var characterFile in Directory.EnumerateFiles("DumpMerged", "*.csv"))
+            {
+                var DumpSplit = characterFile.Split(';');
+
+                if (DumpSplit.Length > 1)
+                {
+                    if (DumpSplit[1] == "" && !DumpSplit[0].Contains("abdata"))
+                    {
+                        var text = DumpSplit[0];
+                        if (previous.Add(text))
+                            EndWriter.WriteLine($"{text}\n---------------");
+                    }
+                }
+            }
+        }
+
+        private static void MarcoXua(string workingDir)
+        {
+            var outputFile = "MarcoExpo2.csv";
+
+            var EndWriter = new StreamWriter(outputFile, true);
+            EndWriter.AutoFlush = true;
+
+            var previous = new HashSet<string>();
+
+            foreach (var hTransFile in Directory.EnumerateFiles(workingDir, "*.txt",
+                SearchOption.AllDirectories))
+            {
+                var CurrentFileLines = File.ReadAllLines(hTransFile);
+                //EndWriter.WriteLine($"{hTransFile}");
+                //EndWriter.WriteLine($"--------------------");
+                foreach (var CFileLine in CurrentFileLines)
+                {
+                    var currentSplit = CFileLine.Split("=");
+                    if (currentSplit.Length > 1)
+                    {
+                        var text = currentSplit[0].Replace("//", "");
+                        if (previous.Add(text))
+                            EndWriter.WriteLine($"{text}");
+                        //EndWriter.WriteLine($"{currentSplit[0].Replace("//", "")}=");
+                        //EndWriter.WriteLine($"--------------------");
+                    }
+                }
+
+            }
+            EndWriter.Close();
+        }
+
+        //private static void CopyMess()
+            //{
+            //    var newf = File.ReadAllLines(@"c33-newdump.csv");
+            //    var oldf = File.ReadAllLines(@"c33-olddump.csv");
+            //    var newspl = newf.Select(x => x.Split(new string[] { ";" }, StringSplitOptions.None)).ToList();
+            //    var oldspl = oldf.Select(x => x.Split(new string[] { ";" }, StringSplitOptions.None)).ToList();
+            //    foreach (var newline in newspl)
+            //    {
+            //        var oldline = oldspl.FirstOrDefault(x => x[0].Replace("　", " ") == newline[0].Replace("　", " "));
+            //        if (oldline != null)
+            //        {
+            //            newline[1] = oldline[1];
+            //            newline[2] = oldline[2];
+            //        }
+            //    }
+            //    var output = string.Join("\n", newspl.Select(x => string.Join(";", x)));
+            //    File.WriteAllText(@"test.csv", output);
+            //}
+
+            private static void CopyMess(string CharChoice)
+        {
+            
+            //Console.Clear();
+            //Console.WriteLine("What character type?");
+            //var CharChoice = Console.ReadLine().ToLower();
+
+            
+            // Purpose: Compare two CSV files and populate translations from one to the other.
+            
             // Declaring files
-            var OldDump = "c37-olddump.csv";
-            var NewDump = "c37-newdump.csv";
-            var EndResult = "c37-merged.csv";
+            var OldDump = $"DumpOld\\c{CharChoice}.csv";
+            var NewDump = $"DumpNew\\c{CharChoice}.csv";
+            var EndResult = $"DumpMerged\\c{CharChoice}.csv";
+
+            if (!File.Exists(OldDump))
+            {
+                Console.WriteLine($"{OldDump} didn't exist!");
+                goto endroutine;
+            }
+
             string currentNewABData = "";
             string currentOldABData = "";
             string finishedLine = "";
+
+            Console.WriteLine($"Currently working on c{CharChoice}...");
 
             // Reading all lines
             var OldLines = File.ReadAllLines(OldDump);
@@ -185,26 +307,28 @@ namespace TranslationConverter
 
             // Opening file for writing
             var EndWriter = new StreamWriter(EndResult, true);
+            EndWriter.AutoFlush = true;
 
             // Let's get to work
-            foreach (var NewDumpLine in NewLines)
+            foreach (var OldDumpLine in OldLines)
             {
                 // Split up the current line
-                var newDumpSplit = NewDumpLine.Split(';');
+                var oldDumpSplit = OldDumpLine.Split(';');
 
                 finishedLine = "";
                 bool match = false;
-                if (newDumpSplit[0].Contains("abdata"))
-                    currentNewABData = newDumpSplit[0];
+                string startstring = "";
+                if (oldDumpSplit[0].Contains("abdata"))
+                    currentOldABData = oldDumpSplit[0];
 
-                foreach (var oldDumpLine in OldLines)
+                foreach (var NewDumpLine in NewLines)
                 {
                     // Split up the old dump as well
-                    var oldDumpSplit = oldDumpLine.Split(';');
+                    var newDumpSplit = NewDumpLine.Split(';');
 
                     // Making sure we're in the right folder
-                    if (oldDumpSplit[0].Contains("abdata"))
-                        currentOldABData = oldDumpSplit[0];
+                    if (newDumpSplit[0].Contains("abdata"))
+                        currentNewABData = newDumpSplit[0];
 
                     //remove whitespaces
                     string cleancompareOld = Regex.Replace(oldDumpSplit[0], @"\s", ""); ;
@@ -216,12 +340,25 @@ namespace TranslationConverter
                         finishedLine = $"{newDumpSplit[0]};{oldDumpSplit[1]};{oldDumpSplit[2]}";
                     }
                 }
+                if (!match && finishedLine == "")
+                    finishedLine = $"{OldDumpLine}";
 
-                EndWriter.WriteLine(finishedLine != "" ? finishedLine : NewDumpLine);
+                //Untranslated test
+                var finishedLineTest = finishedLine.Split(";");
+
+                if (finishedLineTest.Length >= 2 && finishedLine != ";;" && !finishedLine.Contains("abdata"))
+                {
+                    if (finishedLineTest[1] == "")
+                        finishedLine = $"//{finishedLine}";
+                }
+
+                EndWriter.WriteLine(finishedLine != "" ? finishedLine : OldDumpLine);
             }
 
             // Closing file
             EndWriter.Close();
+            endroutine:
+            Console.Write("");
         }
 
         private static void cleanRandom()
@@ -493,8 +630,8 @@ namespace TranslationConverter
             var lineType = "";
             var finishedLine = "";
 
-            if (Directory.Exists("1translation"))
-                Directory.Delete("1translation", true);
+            //if (Directory.Exists("1translation"))
+            //    Directory.Delete("1translation", true);
 
             if (File.Exists("master.txt"))
                 File.Delete("master.txt");
