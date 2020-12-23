@@ -651,13 +651,15 @@ namespace TranslationConverter
                     lineType = "H";
                 else if (csvsplit[0].Contains("communication\\"))
                     lineType = "COMMUNICATION";
+                else if (csvsplit[0].Contains("abdata\\"))
+                    lineType = "GENERIC";
                 else if (csvsplit[0] == "")
                     lineType = "BlankLine";
                 else
                     lineType = "Normal";
 
                 // Generalizing linetype
-                if (lineType == "ADV" || lineType == "H" || lineType == "COMMUNICATION")
+                if (lineType == "ADV" || lineType == "H" || lineType == "COMMUNICATION" || lineType == "GENERIC")
                     lineType = "FileName";
 
                 if (tlFile == "" && lineType != "FileName")
