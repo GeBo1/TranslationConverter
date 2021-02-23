@@ -209,6 +209,8 @@ namespace TranslationConverter
                         ReadCsv("csvfile.csv", true);
                     else
                         Console.WriteLine("You didn't pass an csv file!");
+                    Console.WriteLine("Please do whatever manual BS you wanna do, press enter to continue...");
+                    Console.ReadKey();
 
                     // Starting step2
                     if (Directory.Exists("1translation"))
@@ -223,8 +225,6 @@ namespace TranslationConverter
                         CleanupTranslation("1translation", true);
                     else
                         Console.WriteLine("You need to generate the XUA folder from a CSV first!");
-                    Console.WriteLine("Cleaned up the TL, please do whatever manual BS you wanna do, press enter to continue...");
-                    Console.ReadKey();
 
                     // Starting step4
                     ReadXua("3translation", "adv", true);
