@@ -195,9 +195,12 @@ namespace TranslationConverter
                     Console.ReadKey();
 
                     File.Delete("master.txt");
-                    Directory.Delete("1translation", true);
-                    Directory.Delete("2translation", true);
-                    Directory.Delete("3translation", true);
+                    if (Directory.Exists("1translation"))
+                        Directory.Delete("1translation", true);
+                    if (Directory.Exists("2translation"))
+                        Directory.Delete("2translation", true);
+                    if (Directory.Exists("3translation"))
+                        Directory.Delete("3translation", true);
 
                     // Starting step1
                     if (inputfile == "csv")
