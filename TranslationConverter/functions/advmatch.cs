@@ -29,6 +29,11 @@ namespace TranslationConverter.functions
                     Console.WriteLine($"Dupe: { directoryIn}\translation.txt");
                 }
 
+                if (directoryIn.Contains(@"\30\61"))
+                    directoryIn = directoryIn.Replace(@"\30\61", @"\00\61");
+                else if (directoryIn.Contains(@"\30\62"))
+                    directoryIn = directoryIn.Replace(@"\30\62", @"\00\62");
+
                 Misc.CheckFolderEx(directoryOut);
                 Misc.CheckFileDel($@"{directoryOut}\translation.txt");
                 File.Copy($@"{directoryIn}\translation.txt", $@"{directoryOut}\translation.txt");

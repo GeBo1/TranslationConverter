@@ -46,8 +46,12 @@ namespace TranslationConverter.functions
                             splitMasterLine[0] = splitMasterLine[0].Replace("♡", "");
                             splitMasterLine[0] = splitMasterLine[0].Replace("★", "");
 
+                            if(splitMasterLine[0].Contains("OPTION[4]:無駄にあるだけ"))
+                                Console.WriteLine("sdf");
+
                             string OptionTester = Regex.Replace(splitOldLine[0], @"(^[a-zA-Z]+\[.*]:)", "");
-                            if (OptionTester == splitMasterLine[0])
+                            string OptionTester2 = Regex.Replace(splitMasterLine[0], @"(^[a-zA-Z]+\[.*]:)", "");
+                            if (OptionTester == OptionTester2)
                             {
                                 if (translationClean)
                                 {
