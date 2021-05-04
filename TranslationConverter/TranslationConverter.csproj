@@ -54,6 +54,7 @@
     <Compile Include="functions\FillHDupes.cs" />
     <Compile Include="functions\MergeWithUpdatedRepo.cs" />
     <Compile Include="functions\Misc.cs" />
+    <Compile Include="functions\RepoBlankLineBSRemover.cs" />
     <Compile Include="functions\TransProgressClean.cs" />
     <Compile Include="functions\ZipHandler.cs" />
     <Compile Include="Program.cs" />

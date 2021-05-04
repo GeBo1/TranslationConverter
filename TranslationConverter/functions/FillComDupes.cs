@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace TranslationConverter.functions
@@ -45,7 +46,24 @@ namespace TranslationConverter.functions
                             splitMasterLine[0] = splitMasterLine[0].Replace("♡", "");
                             splitMasterLine[0] = splitMasterLine[0].Replace("★", "");
 
-                            splitMasterLine[0] = Regex.Replace(splitMasterLine[0], @"(^[a-zA-Z]+\[.*]:)", "");
+                            string OptionTester = Regex.Replace(splitOldLine[0], @"(^[a-zA-Z]+\[.*]:)", "");
+                            if (OptionTester == splitMasterLine[0])
+                            {
+                                if (translationClean)
+                                {
+                                    try
+                                    {
+                                        file.Write(splitOldLine[0] + "=" + splitMasterLine[1] + "=" + splitOldLine[2] + "\n");
+                                    }
+                                    catch (Exception)
+                                    {
+                                        file.Write(splitOldLine[0] + "=" + splitMasterLine[1] + "\n");
+                                    }
+                                }
+                                else
+                                    file.Write($"{splitOldLine[0]}={splitMasterLine[1]}\n");
+                                hit = true;
+                            }
                         }
 
                         if (splitOldLine[0] != splitMasterLine[0] || hit) continue;
@@ -68,8 +86,7 @@ namespace TranslationConverter.functions
 
                     if (splitOldLine[0] == "")
                         file.Write("\n");
-                    else if (!hit && translationClean)
-                    {
+                    else if (!hit)
                         try
                         {
                             file.Write(splitOldLine[0] + "=" + splitOldLine[1] + "=" + splitOldLine[2] + "\n");
@@ -78,11 +95,6 @@ namespace TranslationConverter.functions
                         {
                             file.Write(splitOldLine[0] + "=" + splitOldLine[1] + "\n");
                         }
-                    }
-                    else
-                    {
-                        file.Write(splitOldLine[0] + "=" + splitOldLine[1] + "\n");
-                    }
                 }
 
                 file.Close();

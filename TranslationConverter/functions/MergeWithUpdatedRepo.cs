@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace TranslationConverter.functions
 {
@@ -37,6 +38,9 @@ namespace TranslationConverter.functions
                     var currentRepoLineSplit = currentRepoLine.Replace("//", "").Split('=');
                     var hit = false;
 
+                    if (currentRepoLineSplit[0].Contains("「英語は思考の\"思う\"モ、想像の\"想う\"モ、ｔｈｉｎｋダケド、アナタにワタシの恋、伝えるためにニッポン語、勉強したヨ。ワタシの\"オモウ\"、ドッチ？　分かる？」"))
+                        Console.WriteLine("asd");
+
                     if (currentRepoLineSplit[0] == "")
                     {
                         fileWriter.WriteLine("");
@@ -46,6 +50,9 @@ namespace TranslationConverter.functions
                     foreach (var FreshTLLine in FreshTLReader)
                     {
                         var currentFreshLineSplit = FreshTLLine.Split(';');
+
+                        if (currentRepoLineSplit[0].Contains("「英語は思考の\"思う\"モ、想像の\"想う\"モ、ｔｈｉｎｋダケド、アナタにワタシの恋、伝えるためにニッポン語、勉強したヨ。ワタシの\"オモウ\"、ドッチ？　分かる？」") && currentFreshLineSplit[0].Contains("「英語は思考の\"思う\"モ、想像の\"想う\"モ、ｔｈｉｎｋダケド、アナタにワタシの恋、伝えるためにニッポン語、勉強したヨ。ワタシの\"オモウ\"、ドッチ？　分かる？」"))
+                            Console.WriteLine("skdjfhbasloidhfvb");
 
                         if (currentFreshLineSplit[0].Contains(@"abdata\adv\scenario") ||
                             currentFreshLineSplit[0].Contains(@"abdata\communication") ||
@@ -94,6 +101,10 @@ namespace TranslationConverter.functions
                         }
                         else if (RepoTLFile.Contains("communication\\"))
                         {
+                            if ( currentFreshLineSplit[1] == String.Empty) 
+                                break;
+
+                            currentFreshLineSplit[0] = Regex.Replace(currentFreshLineSplit[0], @"(^[a-zA-Z]+\[.*]:)", "");
                             try
                             {
                                 comMasterDictionary.Add(currentFreshLineSplit[0], currentFreshLineSplit[1]);

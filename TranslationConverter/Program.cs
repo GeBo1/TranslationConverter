@@ -81,9 +81,7 @@ namespace TranslationConverter
                     TransProgressClean.Run(true, arg, "TLCleanWork");
                     break;
                 case "t":
-                    CreateSCV.Runner(true, @"TLCleanWork\3translation", "adv");
-                    CreateSCV.Runner(true, @"TLCleanWork\3translation", "communication");
-                    CreateSCV.Runner(true, @"TLCleanWork\3translation", "h");
+                    RepoBlankLineBSRemover.Runner();
                     break;
                 default:
                     break;
