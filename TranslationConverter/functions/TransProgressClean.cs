@@ -10,6 +10,8 @@ namespace TranslationConverter.functions
             if (Misc.CheckFileExist(inputFile))
                 return;
 
+            Misc.CheckFolderEx(workFolder);
+
             FolderTask(workFolder); // Deleting workfolders if they exist to avoid dupe mess
 
             foreach (var FreshTLFile in Directory.EnumerateFiles(@"NewCSV", "*.csv", SearchOption.AllDirectories))
