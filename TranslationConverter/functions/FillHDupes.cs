@@ -50,15 +50,15 @@ namespace TranslationConverter.functions
                         {
                             try
                             {
-                                file.Write(splitMasterLine[0] + "=" + splitMasterLine[1] + "=" + splitOldLine[2] + "\n");
+                                file.Write(splitOldLine[0] + "=" + splitMasterLine[1] + "=" + splitOldLine[2] + "\n");
                             }
                             catch (Exception)
                             {
-                                file.Write(splitMasterLine[0] + "=" + splitMasterLine[1] + "\n");
+                                file.Write(splitOldLine[0] + "=" + splitMasterLine[1] + "\n");
                             }
                         }
                         else
-                            file.Write($"{splitMasterLine[0]}={splitMasterLine[1]}\n");
+                            file.Write($"{splitOldLine[0]}={splitMasterLine[1]}\n");
                         hit = true;
                     }
 
